@@ -1,5 +1,3 @@
-const Blog = require('../models/blog');
-
 const initialBlogs = [{
   _id: '5a422a851b54a676234d17f7',
   title: 'React patterns',
@@ -44,6 +42,25 @@ const initialBlogs = [{
   __v: 0,
 }];
 
+const initialUsers = [{
+  name: 'tester one',
+  username: 'tester',
+  passwordHash: 'password',
+}, {
+  name: 'tester two',
+  username: 'tester2',
+  passwordHash: 'password2',
+}, {
+  name: 'tester three',
+  username: 'tester3',
+  passwordHash: 'password3',
+}, {
+  name: 'tester four',
+  username: 'tester4',
+  passwordHash: 'password4',
+}];
+
 module.exports = {
   initialBlogs,
+  initialUsers,
 };

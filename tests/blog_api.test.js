@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 const supertest = require('supertest');
+const bcrypt = require('bcrypt');
 const app = require('../app');
-const Blog = require('../models/blog');
 const helper = require('./test_helper');
+const Blog = require('../models/blog');
+const User = require('../models/user');
 
 const api = supertest(app);
 
@@ -85,47 +87,111 @@ describe('creation of new blog posts', () => {
       .send(blog)
       .expect(400);
   });
+});
 
-  describe('modifying an existing blog post', () => {
-    beforeEach(async () => {
-      await Blog.deleteMany({});
-      const blog = helper.initialBlogs[0];
-      await api.post('/api/blogs').send(blog);
-    });
-    test('successfully updating the amount of likes', async () => {
-      const response = await api.get('/api/blogs');
+describe('modifying an existing blog post', () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({});
+    const blog = helper.initialBlogs[0];
+    await api.post('/api/blogs').send(blog);
+  });
+  test('successfully updating the amount of likes', async () => {
+    const response = await api.get('/api/blogs');
 
-      const blog = response.body[0];
+    const blog = response.body[0];
 
-      const newBlog = {
-        // title: blog.title,
-        // author: blog.author,
-        // url: blog.url,
-        likes: (blog.likes + 1),
-      };
+    const newBlog = {
+      likes: (blog.likes + 1),
+    };
 
-      const updatedBlog = await api.put(`/api/blogs/${blog.id}`).send(newBlog);
-      expect(updatedBlog.body.likes).toBe(blog.likes + 1);
-    });
+    const updatedBlog = await api.put(`/api/blogs/${blog.id}`).send(newBlog);
+    expect(updatedBlog.body.likes).toBe(blog.likes + 1);
+  });
+});
+
+describe('deletion of a blog post', () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({});
+    const blog = helper.initialBlogs[0];
+    await api.post('/api/blogs').send(blog);
+  });
+  test('successfully delete a blog post', async () => {
+    const response = await api.get('/api/blogs');
+    const blog = response.body[0];
+    await api
+      .delete(`/api/blogs/${blog.id}`)
+      .expect(204);
+
+    const responseAtEnd = await api.get('/api/blogs');
+    expect(responseAtEnd.body).toHaveLength(0);
+  });
+});
+
+describe('creation of a user account', () => {
+  beforeEach(async () => {
+    await User.deleteMany({});
   });
 
-  describe('deletion of a blog post', () => {
-    beforeEach(async () => {
-      await Blog.deleteMany({});
-      const blog = helper.initialBlogs[0];
-      await api.post('/api/blogs').send(blog);
-    });
-    test('successfully delete a blog post', async () => {
-      const response = await api.get('/api/blogs');
-      const blog = response.body[0];
-      await api
-        .delete(`/api/blogs/${blog.id}`)
-        .expect(204);
+  test('successful creation of a user account', async () => {
+    const newUser = {
+      username: 'wisepanda',
+      name: 'Wise Panda',
+      password: 'securepassword',
+    };
 
-      const responseAtEnd = await api.get('/api/blogs');
-      expect(responseAtEnd.body).toHaveLength(0);
-    });
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
   });
+});
+
+describe('there are existing users in the database', () => {
+  beforeEach(async () => {
+    await User.deleteMany({});
+
+    const passwordHash = await bcrypt.hash('secret', 10);
+    const user = new User({ username: 'tester', passwordHash });
+
+    await user.save();
+  });
+
+  test('viewing all users', async () => {
+    const response = await api.get('/api/users');
+    expect(response.body).toHaveLength(1);
+  });
+});
+
+describe('user creation', () => {
+  beforeEach(async () => {
+    await User.deleteMany({});
+  });
+
+  test('creating a user with the same username', async () => {
+    const passwordHash = await bcrypt.hash('secret', 10);
+    const user = new User({ username: 'tester', passwordHash });
+
+    await user.save();
+
+    const newUser = {
+      username: 'tester',
+      name: 'Tester One',
+      password: 'moresecret',
+    };
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/);
+
+    expect(result.body.error).toContain('`username` to be unique');
+  });
+
+  test('failure to create user if pass/user is less than 3 char', async () => {
+      
+  })
 });
 
 afterAll(() => {
