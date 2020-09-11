@@ -85,6 +85,47 @@ describe('creation of new blog posts', () => {
       .send(blog)
       .expect(400);
   });
+
+  describe('modifying an existing blog post', () => {
+    beforeEach(async () => {
+      await Blog.deleteMany({});
+      const blog = helper.initialBlogs[0];
+      await api.post('/api/blogs').send(blog);
+    });
+    test('successfully updating the amount of likes', async () => {
+      const response = await api.get('/api/blogs');
+
+      const blog = response.body[0];
+
+      const newBlog = {
+        // title: blog.title,
+        // author: blog.author,
+        // url: blog.url,
+        likes: (blog.likes + 1),
+      };
+
+      const updatedBlog = await api.put(`/api/blogs/${blog.id}`).send(newBlog);
+      expect(updatedBlog.body.likes).toBe(blog.likes + 1);
+    });
+  });
+
+  describe('deletion of a blog post', () => {
+    beforeEach(async () => {
+      await Blog.deleteMany({});
+      const blog = helper.initialBlogs[0];
+      await api.post('/api/blogs').send(blog);
+    });
+    test('successfully delete a blog post', async () => {
+      const response = await api.get('/api/blogs');
+      const blog = response.body[0];
+      await api
+        .delete(`/api/blogs/${blog.id}`)
+        .expect(204);
+
+      const responseAtEnd = await api.get('/api/blogs');
+      expect(responseAtEnd.body).toHaveLength(0);
+    });
+  });
 });
 
 afterAll(() => {
