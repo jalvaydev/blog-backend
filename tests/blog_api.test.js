@@ -190,8 +190,21 @@ describe('user creation', () => {
   });
 
   test('failure to create user if pass/user is less than 3 char', async () => {
-      
-  })
+    const newUser = {
+      username: 'te',
+      name: 'tester',
+      password: 'st',
+    };
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/);
+
+    console.log(result.body);
+    expect(result.body.error).toContain();
+  });
 });
 
 afterAll(() => {

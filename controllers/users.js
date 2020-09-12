@@ -4,7 +4,8 @@ const usersRouter = require('express').Router();
 const User = require('../models/user');
 
 usersRouter.get('/', async (request, response) => {
-  const list = await User.find({});
+  const list = await User
+    .find({}).populate('blogs', { url: 1, title: 1, name: 1 });
 
   response.json(list.map((user) => user.toJSON()));
 });
@@ -30,6 +31,7 @@ usersRouter.post('/', async (request, response) => {
 
     response.json(savedUser);
   } catch (error) {
+    console.log('an error');
     response.status(400).json({ error: error.message });
   }
 });

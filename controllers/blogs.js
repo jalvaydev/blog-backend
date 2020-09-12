@@ -1,9 +1,12 @@
+/* eslint-disable no-underscore-dangle */
 const blogsRouter = require('express').Router();
 const Blog = require('../models/blog');
+const User = require('../models/user');
 
 blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog.find({});
-  response.json(blogs.map((blog) => blog.toJSON()));
+  const blogs = await Blog
+    .find({}).populate('user', { username: 1, name: 1 });
+  response.json(blogs);
 });
 
 blogsRouter.get('/:id', async (request, response) => {
@@ -17,10 +20,23 @@ blogsRouter.get('/:id', async (request, response) => {
 
 blogsRouter.post('/', async (request, response) => {
   try {
-    const blog = new Blog(request.body);
+    const { body } = request;
+
+    const user = await User.findById(body.userId);
+
+    const blog = new Blog({
+      url: body.url,
+      title: body.title,
+      name: body.name,
+      user: user._id,
+      likes: body.likes,
+    });
     const savedBlog = await blog.save();
 
-    response.json(savedBlog.toJSON());
+    user.blogs = user.blogs.concat(savedBlog._id);
+    await user.save();
+
+    response.json(savedBlog);
   } catch { return response.status(400).end(); }
 });
 

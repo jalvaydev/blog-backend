@@ -3,7 +3,7 @@ Content-Type: application/json
 
 {
     "title": "A story about bao",
-    "author": "Wise Panda",
+    "name": "Wise Panda",
     "url": "www.savethepanda.com",
-    "likes": 100
+    "userId": "5f5d0b3157f4e33cba3aa4bc"
 }
