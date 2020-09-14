@@ -207,6 +207,40 @@ describe('user creation', () => {
   });
 });
 
+describe('login system', () => {
+  beforeEach(async () => {
+    await User.deleteMany({});
+
+    const passwordHash = await bcrypt.hash('secret', 10);
+    const user = new User({ username: 'tester', passwordHash });
+    await user.save();
+  });
+
+  test('successful login with username and password', async () => {
+    const loginInfo = {
+      username: 'tester',
+      password: 'secret',
+    };
+
+    await api
+      .post('/api/login')
+      .send(loginInfo)
+      .expect(200);
+  });
+
+  test('failure to login with incorrect password, returns 401 status code', async () => {
+    const loginInfo = {
+      username: 'tester',
+      password: 'wrong',
+    };
+
+    await api
+      .post('/api/login')
+      .send(loginInfo)
+      .expect(401);
+  });
+});
+
 afterAll(() => {
   mongoose.connection.close();
 });
