@@ -1,9 +1,9 @@
 POST http://localhost:3001/api/blogs
 Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhbmRhdGhld2lzZSIsImlkIjoiNWY1ZDBiMzE1N2Y0ZTMzY2JhM2FhNGJjIiwiaWF0IjoxNjAwMTMxNDkzfQ.82kJ-pjsFSldR5LvEA_MBNLNGxTT5cdqL4-qK8wxUCs
 
 {
     "title": "A story about bao",
     "name": "Wise Panda",
-    "url": "www.savethepanda.com",
-    "userId": "5f5d0b3157f4e33cba3aa4bc"
+    "url": "www.savethepanda.com"
 }

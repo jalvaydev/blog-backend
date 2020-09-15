@@ -18,6 +18,11 @@ usersRouter.post('/', async (request, response) => {
       throw '`password` must be at least 3 characters';
     }
 
+    // const exists = await User.find({ username: body.username });
+    // if (exists.length === 0) {
+    //   throw '`username` must be at least 3 characters!'
+    // }
+
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(body.password, saltRounds);
 
@@ -31,8 +36,7 @@ usersRouter.post('/', async (request, response) => {
 
     response.json(savedUser);
   } catch (error) {
-    console.log('an error');
-    response.status(400).json({ error: error.message });
+    response.status(400).json({ error });
   }
 });
 

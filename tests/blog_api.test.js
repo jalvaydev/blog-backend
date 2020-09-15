@@ -186,12 +186,12 @@ describe('user creation', () => {
       .expect(400)
       .expect('Content-Type', /application\/json/);
 
-    expect(result.body.error).toContain('`username` to be unique');
+    expect(result.body.error.message).toContain('Error, expected `username` to be unique');
   });
 
-  test('failure to create user if pass/user is less than 3 char', async () => {
+  test('failure to create user if pass is less than 3 char', async () => {
     const newUser = {
-      username: 'te',
+      username: 'tester',
       name: 'tester',
       password: 'st',
     };
@@ -201,9 +201,23 @@ describe('user creation', () => {
       .send(newUser)
       .expect(400)
       .expect('Content-Type', /application\/json/);
+    expect(result.body.error).toContain('`password` must be at least 3 characters');
+  });
 
-    console.log(result.body);
-    expect(result.body.error).toContain();
+  test('failure to create user if user is less than 3 char', async () => {
+    const newUser = {
+      username: 'te',
+      name: 'tester',
+      password: 'ster',
+    };
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/);
+
+    expect(result.body.error.message).toContain('`username` (`te`) is shorter than the minimum allowed length (3)');
   });
 });
 
