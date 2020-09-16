@@ -40,12 +40,11 @@ describe('viewing a specific blog post', () => {
   test('succeed if valid blog id', async () => {
     const blog = helper.initialBlogs[0];
 
-    const savedBlog = await api
-      .post('/api/blogs')
-      .send(blog);
+    const blogObject = new Blog(blog);
+    const savedBlog = await blogObject.save();
 
     await api
-      .get(`/api/blogs/${savedBlog.body.id}`)
+      .get(`/api/blogs/${savedBlog.id}`)
       .expect(200)
       .expect('Content-Type', /application\/json/);
   });
@@ -54,13 +53,23 @@ describe('viewing a specific blog post', () => {
 describe('creation of new blog posts', () => {
   beforeEach(async () => {
     await Blog.deleteMany({});
+    await User.deleteMany({});
+
+    const passwordHash = await bcrypt.hash('secret', 10);
+    const user = new User({ username: 'tester', passwordHash });
+    await user.save();
   });
 
   test('new blog post is successfully created', async () => {
     const blog = helper.initialBlogs[0];
 
+    const login = await api
+      .post('/api/login')
+      .send({ username: 'tester', password: 'secret' });
+
     await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${login.body.token}`)
       .send(blog)
       .expect(200)
       .expect('Content-Type', /application\/json/);
@@ -73,7 +82,17 @@ describe('creation of new blog posts', () => {
       url: 'www.savethepanda.com',
     };
 
-    const response = await api.post('/api/blogs').send(blog);
+    const login = await api
+      .post('/api/login')
+      .send({ username: 'tester', password: 'secret' });
+
+    const response = await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${login.body.token}`)
+      .send(blog)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
     expect(response.body.likes).toBe(0);
   });
 
@@ -92,8 +111,11 @@ describe('creation of new blog posts', () => {
 describe('modifying an existing blog post', () => {
   beforeEach(async () => {
     await Blog.deleteMany({});
+
     const blog = helper.initialBlogs[0];
-    await api.post('/api/blogs').send(blog);
+
+    const blogObject = new Blog(blog);
+    await blogObject.save();
   });
   test('successfully updating the amount of likes', async () => {
     const response = await api.get('/api/blogs');
@@ -112,14 +134,41 @@ describe('modifying an existing blog post', () => {
 describe('deletion of a blog post', () => {
   beforeEach(async () => {
     await Blog.deleteMany({});
-    const blog = helper.initialBlogs[0];
-    await api.post('/api/blogs').send(blog);
+    await User.deleteMany({});
+
+    const passwordHash = await bcrypt.hash('secret', 10);
+    const user = new User({ username: 'tester', passwordHash });
+
+    await user.save();
+
+    const blog = {
+      title: 'A story about bao',
+      author: 'Wise Panda',
+      url: 'www.savethepanda.com',
+    };
+
+    const login = await api
+      .post('/api/login')
+      .send({ username: 'tester', password: 'secret' });
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${login.body.token}`)
+      .send(blog)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
   });
   test('successfully delete a blog post', async () => {
     const response = await api.get('/api/blogs');
     const blog = response.body[0];
+
+    const login = await api
+      .post('/api/login')
+      .send({ username: 'tester', password: 'secret' });
+
     await api
       .delete(`/api/blogs/${blog.id}`)
+      .set('Authorization', `bearer ${login.body.token}`)
       .expect(204);
 
     const responseAtEnd = await api.get('/api/blogs');
