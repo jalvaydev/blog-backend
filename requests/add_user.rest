@@ -2,7 +2,7 @@ POST http://localhost:3001/api/users
 Content-Type: application/json
 
 {
-    "username": "pandathewise",
-    "name": "Wise Panda",
-    "password": "secretpassword"
+    "username": "fartypants",
+    "name": "Mr.Fart",
+    "password": "heehefart"
 }

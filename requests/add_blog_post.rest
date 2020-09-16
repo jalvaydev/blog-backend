@@ -1,9 +1,9 @@
 POST http://localhost:3001/api/blogs
 Content-Type: application/json
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhbmRhdGhld2lzZSIsImlkIjoiNWY1ZDBiMzE1N2Y0ZTMzY2JhM2FhNGJjIiwiaWF0IjoxNjAwMTMxNDkzfQ.82kJ-pjsFSldR5LvEA_MBNLNGxTT5cdqL4-qK8wxUCs
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhbmRhdGhld2lzZSIsImlkIjoiNWY1ZDBiMzE1N2Y0ZTMzY2JhM2FhNGJjIiwiaWF0IjoxNjAwMjE5MDkxfQ.8YN7oCT5vKMOY8m5sYRQiJMBFBruyI4opbaTHUXiZl0
 
 {
-    "title": "A story about bao",
-    "name": "Wise Panda",
-    "url": "www.savethepanda.com"
+    "title": "A story about farts",
+    "name": "Mr.Farts",
+    "url": "www.savethepants.com"
 }

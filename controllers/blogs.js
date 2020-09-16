@@ -19,24 +19,14 @@ blogsRouter.get('/:id', async (request, response) => {
   }
 });
 
-const getTokenFrom = (request) => {
-  const authorization = request.get('authorization');
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    return authorization.substring(7);
-  }
-
-  return null;
-};
-
 blogsRouter.post('/', async (request, response) => {
   try {
     const { body } = request;
 
-    const token = getTokenFrom(request);
-    const decodedToken = jwt.verify(token, process.env.SECRET);
+    const decodedToken = jwt.verify(request.token, process.env.SECRET);
 
-    if (!token || !decodedToken.id) {
-      return response.status(401).json({ error: 'token missing of invalid' });
+    if (!request.token || !decodedToken.id) {
+      return response.status(401).json({ error: 'token missing or invalid' });
     }
 
     const user = await User.findById(decodedToken.id);
@@ -56,7 +46,7 @@ blogsRouter.post('/', async (request, response) => {
     await user.save();
 
     response.json(savedBlog).status(200);
-  } catch { return response.status(400).end(); }
+  } catch (error) { return response.status(400).json({ error }).end(); }
 });
 
 blogsRouter.put('/:id', async (request, response) => {
@@ -71,11 +61,23 @@ blogsRouter.put('/:id', async (request, response) => {
 });
 
 blogsRouter.delete('/:id', async (request, response) => {
+  const blogToDelete = await Blog.findById(request.params.id);
+
+  const decodedToken = jwt.verify(request.token, process.env.SECRET);
+
+  if (!request.token || !decodedToken.id) {
+    return response.status(401).json({ error: 'token missing or invalid' });
+  }
+
   try {
-    await Blog.findByIdAndRemove(request.params.id);
-    response.status(204).end();
-  } catch {
-    response.status(400);
+    if (blogToDelete.user.toString() === decodedToken.id.toString()) {
+      await Blog.findByIdAndRemove(request.params.id);
+      response.status(204).end();
+    } else {
+      return response.json(401).json({ error: 'a blog can only be deleted by the user who added it' });
+    }
+  } catch (error) {
+    response.status(400).json(error).end();
   }
 });
 
